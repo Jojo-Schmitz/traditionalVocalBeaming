@@ -2,7 +2,7 @@
 //  traditional vocal beaming
 //
 //  Copyright (C)2016-2019 Jörn Eichler (heuchi)
-//  Copyright (C)2022-2024 Joachim Schmitz (Jojo-Schmitz)
+//  Copyright (C)2022-2026 Joachim Schmitz (Jojo-Schmitz)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -72,13 +72,13 @@ MuseScore {
         for (var staff = startStaff; staff <= endStaff; staff++) {
             for (var voice = 0; voice < 4; voice++) {
                 cursor.rewind(Cursor.SELECTION_START); // sets voice to 0
-                cursor.voice = voice; //voice has to be set after goTo
+                cursor.voice = voice; // voice has to be set after goTo
                 cursor.staffIdx = staff;
 
                 if (fullScore)
                     cursor.rewind(Cursor.SCORE_START) // if no selection, beginning of score
 
-                var lastChord = null;
+                var prevChord = null;
                 hasLyrics = false;
 
                 while (cursor.segment && (fullScore || cursor.tick < endTick)) {
@@ -86,21 +86,21 @@ MuseScore {
                         var lyrics = cursor.element.lyrics;
 
                         if (lyrics.length === 0) {
-                            if (lastChord != null && hasLyrics) {
-                                // set last chord to "BEGIN", if it existed
-                                lastChord.beamMode = Beam.BEGIN;
+                            if (prevChord != null && hasLyrics) {
+                                // set prev chord to "BEGIN", if it existed
+                                prevChord.beamMode = Beam.BEGIN;
                             }
                             // don't change anything for this chord
-                            lastChord = null;
+                            prevChord = null;
                         } else {
                             hasLyrics = true;
                             // found lyrics
-                            if (lastChord != null) {
-                                // set last chord to "BEGIN", if it existed
-                                lastChord.beamMode = Beam.BEGIN;
+                            if (prevChord != null) {
+                                // set prev chord to "BEGIN", if it existed
+                                prevChord.beamMode = Beam.BEGIN;
                             }
                             // remember this chord
-                            lastChord = cursor.element;
+                            prevChord = cursor.element;
                         }
 
                         if (hasLyrics) {
@@ -110,9 +110,9 @@ MuseScore {
                     }
                     cursor.next();
                 }
-                if (lastChord != null) {
-                    // set last chord to "NONE", if it existed
-                    lastChord.beamMode = Beam.NONE;
+                if (prevChord !== null) {
+                    // set prev chord to "NONE", if it existed
+                    prevChord.beamMode = Beam.NONE;
                 }
             }
         }
